@@ -1,5 +1,7 @@
 module Policies_42 #Replace 42 by your groupe number
 using ..CantStop # to access function exported from CantStop
+include("dices.jl")
+using .dices
 
 """
 You have to define a policy for each question
@@ -74,10 +76,49 @@ end
 
 #Question 5
 function policy_q5(gs::game_state, adm_movement)
+
     return 1
 end
 function policy_q5(gs::game_state)
-    return (sum(gs.tentitative_movement) > 2)
+    seuil = 0.3
+    prob_each_column = zeros(11)
+    dist = zeros(11)
+    for k in 1:11
+        prob_each_column[k] = can_play([k+1])
+        dist[k] = gs.player_position[1,k+1] - gs.column_length[k+1]
+    end
+    I = gs.open_column
+    if sizeof(I) == 2
+        return true
+    end
+    prob = can_play(I)
+    coef1 = 0
+    coef2 = 0
+    for k in 1:11
+        if k+1 in I
+            coef1 += prob_each_column[k] / dist[k]
+        else
+            coef2 += prob_each_column[k] / dist[k]
+    end
+    sum_prob = 0
+    for i in 2:12
+        for j in 2:12
+            for k in 2:12
+                if i != j
+                    if j!=k
+                        if i != k
+                            sum_prob += can_play([i,j,k])
+                        end
+                    end
+                end
+            end
+        end
+    end
+    prob_to_play = coef1*coef2*prob / sum_prob
+    if prob_to_play > seuil
+        return true
+    end
+    return false
 end
 
 #Question 6

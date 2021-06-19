@@ -56,5 +56,42 @@ function can_play(columns)
     end
     success / num_test
 end
+function proba_dice()
+    dice_proba = zeros((11, 11))
 
+    for dice1 in 1:6
+        for dice2 in 1:6
+            for dice3 in 1:6
+                for dice4 in 1:6
+                    values = [
+                        [dice1 + dice2, dice3 + dice4],
+                        [dice1 + dice3, dice2 + dice4],
+                        [dice1 + dice4, dice3 + dice2]
+                    ]
+
+                    for value in values
+                        v1 = value[1]
+                        v2 = value[2]
+
+                        dice_proba[v1 - 1, v2 - 1] += 1
+                    end
+                end
+            end
+        end
+    end
+    dice_proba ./ 6^4
+end
+
+function proba_coup(proba_d, i, j, k)
+    # i, j and k must be distinct
+
+    proba_d[i, j] + proba_d[j, i] + proba_d[j, k] + proba_d[k, j] + proba_d[i, k] + proba_d[k, i] + proba_d[i, i] + proba_d[j, j] + proba_d[k, k]
+end
+function proba_coup_one_closed(proba_d, i, j)
+    proba_d[i, j] + proba_d[j, i] + proba_d[i, i] + proba_d[j, j]
+end
+
+function proba_coup_one_open(proba_d, i, j)
+    sum(proba_d[i, :]) + sum(proba_d[j, :])
+end
 end
