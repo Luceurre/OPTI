@@ -4,7 +4,7 @@ dices:
 - Author: pl
 - Date: 2021-06-18
 =#
-module dices
+
 function compute_proba()
     num_test = 1000000
     results = zeros(11)
@@ -56,7 +56,8 @@ function can_play(columns)
     end
     success / num_test
 end
-function proba_dice()
+
+function proba_dice(weights=nothing)
     dice_proba = zeros((11, 11))
 
     for dice1 in 1:6
@@ -79,19 +80,51 @@ function proba_dice()
             end
         end
     end
-    dice_proba ./ 6^4
+    dice_proba ./ 6^4 / 3
 end
 
-function proba_coup(proba_d, i, j, k)
+function proba_coup(proba_d, i, j, k, weights=nothing)
     # i, j and k must be distinct
+    if isnothing(weights)
+        weights = ones((3))
+    end
 
-    proba_d[i, j] + proba_d[j, i] + proba_d[j, k] + proba_d[k, j] + proba_d[i, k] + proba_d[k, i] + proba_d[i, i] + proba_d[j, j] + proba_d[k, k]
+    proba_d[i, j] * weights[1] + proba_d[j, i] * weights[2] + proba_d[j, k] * weights[2]
+    + proba_d[k, j] * weights[3] + proba_d[i, k] * weights[1] + proba_d[k, i] * weights[3] + proba_d[i, i] * weights[1] + proba_d[j, j] * weights[2]
+    + proba_d[k, k] * weights[3]
 end
+
 function proba_coup_one_closed(proba_d, i, j)
-    proba_d[i, j] + proba_d[j, i] + proba_d[i, i] + proba_d[j, j]
+
+    proba_d[i, j] * weights + proba_d[j, i] + proba_d[i, i] + proba_d[j, j]
 end
 
-function proba_coup_one_open(proba_d, i, j)
-    sum(proba_d[i, :]) + sum(proba_d[j, :])
+function proba_coup_one_open(proba_d, i, j, weights=nothing)
+    if isnothing(weights)
+        weights = ones((2))
+    end
+
+    weights[1] * sum(proba_d[i, :]) + weights[2] * sum(proba_d[j, :])
 end
+
+function proba_col_full_open(proba_d, i, weight)
+    sum(proba_d[i, :]) * weight
+end
+
+
+function proba_col_weighted(proba_d, i, j, k, weights=nothing)
+    if isnothing(weights)
+        weights = ones((11))
+    end
+
+    p = 0.
+    for l in 1:11
+        if l == i || l == j || l == k
+            continue
+        end
+
+        p += proba_col_full_open(proba_d, l, weights[l])
+    end
+
+    p
 end

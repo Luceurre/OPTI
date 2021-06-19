@@ -1,7 +1,6 @@
 module Policies_42 #Replace 42 by your groupe number
 using ..CantStop # to access function exported from CantStop
 include("dices.jl")
-using .dices
 
 """
 You have to define a policy for each question
@@ -85,36 +84,27 @@ function policy_q5(gs::game_state)
     dist = zeros(11)
     for k in 1:11
         prob_each_column[k] = can_play([k+1])
-        dist[k] = gs.player_position[1,k+1] - gs.column_length[k+1]
+        dist[k] = gs.players_position[1,k+1] - column_length[k+1]
     end
-    I = gs.open_column
+    I = gs.open_columns
     if sizeof(I) == 2
         return true
     end
+    prob_d = proba_dice()
     prob = can_play(I)
-    coef1 = 0
-    coef2 = 0
+    coef1 = proba_coup(prob_d,I[1], I[2], I[3],[dist[I[1]-1],dist[I[2]-1],dist[I[3]-1]])
+    coef2 = proba_col_weighted(prob_d,I[1], I[2], I[3],dist)
+    sum1 = 0
+    sum2 = 0
     for k in 1:11
         if k+1 in I
-            coef1 += prob_each_column[k] / dist[k]
+            sum2 += dist[k]
         else
-            coef2 += prob_each_column[k] / dist[k]
-    end
-    sum_prob = 0
-    for i in 2:12
-        for j in 2:12
-            for k in 2:12
-                if i != j
-                    if j!=k
-                        if i != k
-                            sum_prob += can_play([i,j,k])
-                        end
-                    end
-                end
-            end
+            sum1 += dist[k]
         end
     end
-    prob_to_play = coef1*coef2*prob / sum_prob
+
+    prob_to_play = (coef1/sum1)*(coef2/sum2)*prob
     if prob_to_play > seuil
         return true
     end
