@@ -87,24 +87,69 @@ function policy_q5(gs::game_state)
         dist[k] = gs.players_position[1,k+1] - column_length[k+1]
     end
     I = gs.open_columns
-    if sizeof(I) == 2
-        return true
+    if sizeof(I) != 3
+        if sizeof(I) != 2
+            return true
+        else
+            # Construct array of prob
+            prob_d = proba_dice()
+            # Prob to obtain a column of I (at leats one)
+            prob = can_play(I)
+            # Weights
+            coef1 = proba_coup(prob_d,I[1], I[2], I[3],[dist[I[1]-1],dist[I[2]-1],dist[I[3]-1]])
+            coef2 = proba_col_weighted(prob_d,I[1], I[2], I[3],dist)
+
+            sum = 0
+            for j in 2:12
+                for k in 2:12
+                    if j != k
+                        if i != k
+                            J = [i,j,k]
+                            # compute p(J)
+                            coef1_ = proba_coup(prob_d,J[1], J[2], J[3],[dist[J[1]-1],dist[J[2]-1],dist[J[3]-1]])
+                            coef2_ = proba_col_weighted(prob_d,J[1], J[2], J[3],dist)
+                            prob_ = can_play(J)
+                            sum += coef1_ * coef2_ * prob_
+                        end
+                    end
+                end
+            end
+            prob_to_play = (coef1)*(coef2)*prob / sum
+            if prob_to_play > seuil
+                return true
+            end
+            return false
+        end
     end
+    # Construct array of prob
     prob_d = proba_dice()
+    # Prob to obtain a column of I (at leats one)
     prob = can_play(I)
+    # Weights
     coef1 = proba_coup(prob_d,I[1], I[2], I[3],[dist[I[1]-1],dist[I[2]-1],dist[I[3]-1]])
     coef2 = proba_col_weighted(prob_d,I[1], I[2], I[3],dist)
-    sum1 = 0
-    sum2 = 0
-    for k in 1:11
-        if k+1 in I
-            sum2 += dist[k]
-        else
-            sum1 += dist[k]
+
+    sum = 0
+    for i in 2:12
+        for j in 2:12
+            for k in 2:12
+                if i != j
+                    if j != k
+                        if i != k
+                            J = [i,j,k]
+                            # compute p(J)
+                            coef1_ = proba_coup(prob_d,J[1], J[2], J[3],[dist[J[1]-1],dist[J[2]-1],dist[J[3]-1]])
+                            coef2_ = proba_col_weighted(prob_d,J[1], J[2], J[3],dist)
+                            prob_ = can_play(J)
+                            sum += coef1_ * coef2_ * prob_
+                        end
+                    end
+                end
+            end
         end
     end
 
-    prob_to_play = (coef1/sum1)*(coef2/sum2)*prob
+    prob_to_play = (coef1)*(coef2)*prob / sum
     if prob_to_play > seuil
         return true
     end
