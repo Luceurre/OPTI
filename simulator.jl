@@ -1,11 +1,11 @@
 include("CantStop.jl")
 using .CantStop
 
-include("Policies_42.jl") #replace 42 by your group number
+include("Policies_23.jl") #replace 42 by your group number
 include("Policies_666.jl") #replace 666 by your adversary number
-using .Policies_42 , .Policies_666
+using .Policies_23 , .Policies_666
 
-policy1 = Policies_42.policy_q5
+policy1 = Policies_23.policy_q5
 policy2 = Policies_666.policy_q1
 
 
