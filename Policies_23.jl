@@ -1,4 +1,4 @@
-module Policies_42 #Replace 42 by your groupe number
+module Policies_23 #Replace 42 by your groupe number
 using ..CantStop # to access function exported from CantStop
 include("dices.jl")
 
